@@ -18,6 +18,6 @@ router.post(
   validateRequest(authValidation.loginValidationSchema),
   authController.login,
 );
-// router.post('/refresh-token', authController.refreshAccessToken);
+router.post('/refresh-token', authController.refreshAccessToken);
 
 export const authRouters = router;

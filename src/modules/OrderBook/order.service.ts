@@ -1,4 +1,3 @@
-
 import { ProductModel } from '../ProductBook/product.model';
 import { IOrder } from './order.interface';
 import OrderModel from './order.model';
@@ -16,8 +15,8 @@ const createOrderDB = async (receivedOrder: IOrder) => {
   productDetails.inStock = productDetails.quantity > 0;
   await productDetails.save();
 
-  receivedOrder. totalPrice = productDetails.price * receivedOrder.quantity;
-   
+  receivedOrder.totalPrice = productDetails.price * receivedOrder.quantity;
+
   receivedOrder.status = 'Pending';
 
   return await new OrderModel(receivedOrder).save();
@@ -34,7 +33,33 @@ const getSingleOrder = async (id: string) => {
 };
 
 const updateOrder = async (id: string, payload: Partial<IOrder>) => {
-  const result = await OrderModel.findByIdAndUpdate(id, payload, { new: true }).populate('product');
+  const order = await OrderModel.findById(id).populate('product');
+  if (!order) {
+    throw new Error('Order not found');
+  }
+
+  const product = await ProductModel.findById(order.product);
+  if (!product) {
+    throw new Error('Product not found');
+  }
+
+  if (payload.quantity !== undefined) {
+    const quantityDifference = payload.quantity - order.quantity;
+
+    if (product.quantity < quantityDifference) {
+      throw new Error('Insufficient stock');
+    }
+
+    product.quantity -= quantityDifference;
+    product.inStock = product.quantity > 0;
+    await product.save();
+
+    payload.totalPrice = product.price * payload.quantity;
+  }
+
+  const result = await OrderModel.findByIdAndUpdate(id, payload, {
+    new: true,
+  }).populate('product');
   return result;
 };
 

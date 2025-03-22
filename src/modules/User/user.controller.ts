@@ -18,11 +18,12 @@ const createAdmin = catchAsync(async (req, res) => {
 
 const getUserProfile = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user?.id;
-  
+
   if (!userId) {
-    throw new Error('User not authenticated');
+    throw new Error('User ID not found in token');
   }
-  const result = await userService.getSingleById(userId);
+
+  const result = await userService.getUserProfile(userId);
 
   sendResponse(res, {
     status: true,

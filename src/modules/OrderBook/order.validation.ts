@@ -6,7 +6,7 @@ const orderSchema = z.object({
 });
 
 const orderUpdateValidationSchema = z.object({
-  product: z.string().min(1, { message: 'Product ID is required' }),
+  product: z.string().min(1, { message: 'Product ID is required' }).optional(),
   quantity: z.number().min(1, { message: 'Quantity must be at least 1' }),
 });
 

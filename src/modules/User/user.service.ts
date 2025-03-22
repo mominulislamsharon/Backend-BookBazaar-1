@@ -1,16 +1,14 @@
 import { IUser } from './user.interface';
 import { User } from './user.model';
 
-
-const createAdminDB = async(payload: IUser): Promise<IUser> => {
+const createAdminDB = async (payload: IUser): Promise<IUser> => {
   payload.role = 'admin';
   const result = await User.create(payload);
   return result;
-}
+};
 
-
-const getUserProfile = async () => {
-  const result = await User.find();
+const getUserProfile = async (userId: string) => {
+  const result = await User.findById(userId);
   return result;
 };
 

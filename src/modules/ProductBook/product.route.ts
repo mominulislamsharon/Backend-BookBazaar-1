@@ -2,12 +2,14 @@ import express from 'express';
 import { ProductController } from './product.controller';
 import validateRequest from '../../middleware/validateRequest';
 import { productValidation } from './product.validation';
+import auth from '../../middleware/auth';
+import { USER_ROLE } from '../User/user.constant';
 
 const router = express.Router();
 // CREATE book
 router.post(
   '/',
-  // auth(USER_ROLE.admin),
+  auth(USER_ROLE.admin),
   validateRequest(productValidation.productSchema),
   ProductController.createProduct,
 );
@@ -21,7 +23,7 @@ router.get('/:productId', ProductController.getSingleBook);
 // updata book
 router.put(
   '/:productId',
-  // auth(USER_ROLE.admin),
+  auth(USER_ROLE.admin),
   validateRequest(productValidation.updateProductSchema),
   ProductController.updateBook,
 );
@@ -29,7 +31,7 @@ router.put(
 // delete book
 router.delete(
   '/:productId',
-  // auth(USER_ROLE.admin),
+  auth(USER_ROLE.admin),
   ProductController.deleteBook,
 );
 

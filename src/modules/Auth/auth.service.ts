@@ -2,7 +2,6 @@ import config from '../../config';
 import { IUser } from '../User/user.interface';
 import { User } from '../User/user.model';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 import { createToken, verifyToken } from './auth.utils';
 
 const register = async (payload: IUser) => {
@@ -23,10 +22,12 @@ const login = async (payload: { email: string; password: string }) => {
     user?.password,
   );
 
-  if (!isPasswordValid) throw new Error('Wrong Password!!! Tell me who are you');
+  if (!isPasswordValid)
+    throw new Error('Wrong Password!!! Tell me who are you');
 
   const jwtPayload = {
     userId: user._id.toString(),
+    email: user.email,
     role: user.role,
   };
 
@@ -44,12 +45,12 @@ const login = async (payload: { email: string; password: string }) => {
     config.jwt_refresh_expires_in as string,
   );
 
-  // user.refreshToken = refreshToken;
-  // await user.save();
+  user.refreshToken = refreshToken;
+  await user.save();
 
-  const { password, ...remainData } = user;
+  const { password, ...remainData } = user.toObject();
 
-  return { token, refreshToken,  remainData };
+  return { token, refreshToken, remainData };
 };
 
 const refreshToken = async (token: string) => {
@@ -64,14 +65,15 @@ const refreshToken = async (token: string) => {
   }
 
   // Check if the refresh token matches
-  
-  // if (user.refreshToken !== token) {
-  //   throw new Error('Invalid refresh token');
-  // }
+
+  if (user.refreshToken !== token) {
+    throw new Error('Invalid refresh token');
+  }
 
   // Generate new access token
   const jwtPayload = {
     userId: user._id,
+    email: user.email,
     role: user.role,
   };
 

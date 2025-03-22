@@ -25,6 +25,9 @@ const userSchema = new Schema<IUser>(
       enum: ['user', 'admin'],
       default: 'user',
     },
+    refreshToken: {
+      type: String,
+    },
   },
   {
     timestamps: true,

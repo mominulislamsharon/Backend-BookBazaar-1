@@ -17,14 +17,14 @@ const register = catchAsync(async (req, res) => {
 
 const login = catchAsync(async (req, res) => {
   const result = await AuthService.login(req.body);
-  // const { refreshToken } = result;
+  const { refreshToken } = result;
 
-  // res.cookie('refreshToken', refreshToken, {
-  //   secure: config.NODE_ENV === 'production',
-  //   httpOnly: true,
-  //   sameSite: 'none',
-  //   maxAge: 100 * 60 * 60 * 24 * 365,
-  // });
+  res.cookie('refreshToken', refreshToken, {
+    secure: config.NODE_ENV === 'production',
+    httpOnly: true,
+    sameSite: 'none',
+    maxAge: 100 * 60 * 60 * 24 * 365,
+  });
 
   sendResponse(res, {
     status: true,
@@ -34,8 +34,21 @@ const login = catchAsync(async (req, res) => {
   });
 });
 
+const refreshAccessToken = catchAsync(async (req, res) => {
+  const { refreshToken } = req.cookies;
+
+  const result = await AuthService.refreshToken(refreshToken);
+
+  sendResponse(res, {
+    status: true,
+    message: 'New access token generated successfully',
+    statusCode: StatusCodes.OK,
+    data: result,
+  });
+});
+
 export const authController = {
   register,
   login,
-  // refreshAccessToken,
+  refreshAccessToken,
 };

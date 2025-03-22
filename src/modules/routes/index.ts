@@ -3,6 +3,7 @@ import { userRoutes } from '../User/user.route';
 import { ProductRoutes } from '../ProductBook/product.route';
 import { OrdersRoutes } from '../OrderBook/order.route';
 import { authRouters } from '../Auth/auth.route';
+import { AdminRoutes } from '../Admin/admin.route';
 
 const router = Router();
 
@@ -13,7 +14,7 @@ const routeRoutes = [
   },
   {
     path: '/admins',
-    route: userRoutes,
+    route: AdminRoutes,
   },
   {
     path: '/products',
