@@ -1,6 +1,14 @@
 import { IUser } from './user.interface';
 import { User } from './user.model';
 
+
+const createAdminDB = async(payload: IUser): Promise<IUser> => {
+  payload.role = 'admin';
+  const result = await User.create(payload);
+  return result;
+}
+
+
 const getUserProfile = async () => {
   const result = await User.find();
   return result;
@@ -24,6 +32,7 @@ const deleteUser = async (id: string) => {
 };
 
 export const userService = {
+  createAdminDB,
   getUserProfile,
   getSingleById,
   updateProfilerUser,

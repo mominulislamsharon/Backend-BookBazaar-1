@@ -5,6 +5,17 @@ import { userService } from './user.service';
 import sendResponse from '../../Utils/sendResponse';
 import catchAsync from '../../Utils/catchAsync';
 
+const createAdmin = catchAsync(async (req, res) => {
+  const adminData = req.body;
+  const result = await userService.createAdminDB(adminData);
+  sendResponse(res, {
+    message: 'Admin created successfully',
+    status: true,
+    statusCode: StatusCodes.CREATED,
+    data: result,
+  });
+});
+
 const getUserProfile = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user?.id;
   
@@ -60,6 +71,7 @@ const deleteUser = catchAsync(async (req, res) => {
 });
 
 export const UserController = {
+  createAdmin,
   getUserProfile,
   getSingleById,
   updateUserProfile,

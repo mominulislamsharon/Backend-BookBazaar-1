@@ -7,6 +7,12 @@ const router = express.Router();
 
 //user routes
 
+router.post(
+  '/create-admin',
+    validateRequest(UserValidation.userValidationSchema),
+  UserController.createAdmin,
+);
+
 router.get('/', 
   // auth(USER_ROLE.user),
    UserController.getUserProfile);
