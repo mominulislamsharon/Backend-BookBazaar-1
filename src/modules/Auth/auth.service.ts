@@ -3,6 +3,7 @@ import { IUser } from '../User/user.interface';
 import { User } from '../User/user.model';
 import bcrypt from 'bcrypt';
 import { createToken, verifyToken } from './auth.utils';
+import sendMail from '../../Utils/sendMail';
 
 const register = async (payload: IUser) => {
   const result = await User.create(payload);
@@ -46,7 +47,6 @@ const login = async (payload: { email: string; password: string }) => {
   );
 
   user.refreshToken = refreshToken;
-  await user.save();
 
   const { password, ...remainData } = user.toObject();
 
@@ -55,6 +55,7 @@ const login = async (payload: { email: string; password: string }) => {
 
 const refreshToken = async (token: string) => {
   // Verify the refresh token
+
   const decoded = verifyToken(token, config.jwt_refresh_secret as string);
   const { userId } = decoded;
 
@@ -83,17 +84,76 @@ const refreshToken = async (token: string) => {
     config.jwt_expires_in as string,
   );
 
-  const refreshToken = createToken(
+  const newRefreshToken = createToken(
     jwtPayload,
     config.jwt_refresh_secret as string,
     config.jwt_refresh_expires_in as string,
   );
 
-  return { accessToken, refreshToken };
+  return { accessToken, refreshToken: newRefreshToken };
+};
+
+const forgetPassword = async (payload: { email: string }) => {
+  const user = await User.findOne({ email: payload.email });
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const jwtPayload = {
+    userId: user?._id,
+    email: user?.email,
+    role: user?.role,
+  };
+
+  const resetToken = createToken(
+    { jwtPayload },
+    config.jwt_reset_secret as string,
+    config.jwt_reset_expires_in as string,
+  );
+
+  const resetLink = `http://localhost:3000/reset-password?id=${user?._id}&token=${resetToken}`;
+
+  console.log(resetLink);
+
+  await sendMail(user?.email, 'Reset Password!!', resetLink);
+};
+
+const resetPassword = async (payload: {
+  id: string;
+  password: string;
+  token: string;
+}) => {
+  const user = await User.findById(payload?.id);
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const decoded = verifyToken(payload.token, config.jwt_reset_secret as string);
+  if (!decoded) {
+    throw new Error('Invalid token');
+  }
+
+  const hashedPassword = await bcrypt.hash(
+    payload.password,
+    Number(config.bcrypt_salt_rounds),
+  );
+
+  console.log('JWT Reset Secret:', config.jwt_reset_secret);
+  console.log('Received Token:', payload.token);
+
+  user.password = hashedPassword;
+
+  const result = await User.findByIdAndUpdate(user?.id, user, { new: true });
+
+  return result;
 };
 
 export const AuthService = {
   register,
   login,
   refreshToken,
+  forgetPassword,
+  resetPassword,
 };

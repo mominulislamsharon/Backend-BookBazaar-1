@@ -25,10 +25,11 @@ const auth = (...requiredRole: TUserRole[]) => {
         role: string;
       };
     } catch (error) {
-      throw new Error('Invalid token');
+      throw new Error('Unauthorized token');
     }
 
     const { userId, email, role } = decoded;
+
     console.log('Required Role:', requiredRole);
     console.log('User Role:', role);
 
