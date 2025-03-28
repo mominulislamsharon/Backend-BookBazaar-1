@@ -4,6 +4,7 @@ import { ProductModel } from './product.model';
 // crate a Product
 const createProductDB = async (product: IProduct<Category>) => {
   const result = await ProductModel.create(product);
+
   return result;
 };
 
@@ -22,7 +23,6 @@ const getAllBooksDB = async (searchTerm: string | undefined) => {
   const result = await ProductModel.find();
   return result;
 };
-
 
 const getSingleBookDB = async (id: string) => {
   const result = await ProductModel.findById(id);

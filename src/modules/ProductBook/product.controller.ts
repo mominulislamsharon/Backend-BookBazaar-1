@@ -3,49 +3,59 @@ import { ProductService } from './product.service';
 import catchAsync from '../../Utils/catchAsync';
 import sendResponse from '../../Utils/sendResponse';
 import { StatusCodes } from 'http-status-codes';
+import { sendImageCloudinary } from '../../Utils/sendImages';
 
-const createProduct = catchAsync(async (req: Request, res: Response): Promise<void> => {
+const createProduct = catchAsync(
+  async (req: Request, res: Response): Promise<void> => {
+    const productdata = req.body;
 
-  const  productdata  = req.body;
+    if (req.file) {
+      const imageName = `product_${Date.now()}`;
+      const path = req.file.path;
+      const uploadResult = await sendImageCloudinary(imageName, path);
 
-  const result = await ProductService.createProductDB(productdata);
+      if (uploadResult.secure_url) {
+        productdata.images = uploadResult.secure_url;
+      }
+    }
 
-  sendResponse(res, {
-    message: 'Book created successfully',
-    status: true,
-    statusCode: StatusCodes.CREATED,
-    data: result,
-  })
-});
+    const result = await ProductService.createProductDB(productdata);
 
+    sendResponse(res, {
+      message: 'Book created successfully',
+      status: true,
+      statusCode: StatusCodes.CREATED,
+      data: result,
+    });
+  },
+);
 
 // getAllbooks
 const getAllbooks = catchAsync(async (req: Request, res: Response) => {
-    const searchTerm = req.query.searchTerm as string | undefined;
+  const searchTerm = req.query.searchTerm as string | undefined;
 
-    const result = await ProductService.getAllBooksDB(searchTerm);
+  const result = await ProductService.getAllBooksDB(searchTerm);
 
-    sendResponse(res, {
-      message: 'Books retrieved successfully',
-      status: true,
-      statusCode: StatusCodes.OK,
-      data: result,
-    })
+  sendResponse(res, {
+    message: 'Books retrieved successfully',
+    status: true,
+    statusCode: StatusCodes.OK,
+    data: result,
+  });
 });
 
 // get special book id
 const getSingleBook = catchAsync(async (req: Request, res: Response) => {
- 
   const { productId } = req.params;
 
   const result = await ProductService.getSingleBookDB(productId);
 
-  sendResponse(res ,{
+  sendResponse(res, {
     message: 'Book retrieved successfully',
     status: true,
     statusCode: StatusCodes.OK,
     data: result,
-  })
+  });
 });
 
 // update book
@@ -60,12 +70,11 @@ const updateBook = catchAsync(async (req: Request, res: Response) => {
     status: true,
     statusCode: StatusCodes.OK,
     data: result,
-  })
+  });
 });
 
 // delete book
 const deleteBook = catchAsync(async (req: Request, res: Response) => {
- 
   const productId = req.params.productId;
   const result = await ProductService.deletBookDB(productId);
 
@@ -74,7 +83,7 @@ const deleteBook = catchAsync(async (req: Request, res: Response) => {
     status: true,
     statusCode: StatusCodes.OK,
     data: result,
-  })
+  });
 });
 
 export const ProductController = {

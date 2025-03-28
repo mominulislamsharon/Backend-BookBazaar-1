@@ -15,4 +15,7 @@ export default {
   jwt_expires_in: process.env.JWT_EXPIRES_IN,
   jwt_reset_secret: process.env.JWT_RESET_SECRET,
   jwt_reset_expires_in: process.env.JWT_RESET_EXPIRES_IN,
+  cloudinary_cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  cloudinary_api_key: process.env.CLOUDINARY_API_KEY,
+  cloudinary_api_secret: process.env.CLOUDINARY_API_SECRET
 };

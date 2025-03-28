@@ -1,11 +1,9 @@
-import { Schema, model} from 'mongoose';
+import { Schema, model } from 'mongoose';
 import { Category, IProduct } from './product.interface';
 
 const productSchema = new Schema<IProduct<Category>>(
   {
-    title: { type: String, required: [true, 
-      'please title name properly'
-      ] },
+    title: { type: String, required: [true, 'please title name properly'] },
     author: { type: String, required: true },
     price: { type: Number, required: true, min: 0 },
     category: {
@@ -13,6 +11,7 @@ const productSchema = new Schema<IProduct<Category>>(
       required: true,
       enum: ['Fiction', 'Science', 'SelfDevelopment', 'Poetry', 'Religious'],
     },
+    images: { type: String, default: '' },
     description: { type: String },
     quantity: { type: Number, required: true, min: 0 },
     inStock: { type: Boolean, default: true },
@@ -22,7 +21,4 @@ const productSchema = new Schema<IProduct<Category>>(
   },
 );
 
-export const ProductModel = model<IProduct<Category>>(
-  'Product',
-  productSchema,
-);
+export const ProductModel = model<IProduct<Category>>('Product', productSchema);

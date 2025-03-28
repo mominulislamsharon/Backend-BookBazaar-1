@@ -1,15 +1,21 @@
-import express from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import { ProductController } from './product.controller';
 import validateRequest from '../../middleware/validateRequest';
 import { productValidation } from './product.validation';
 import auth from '../../middleware/auth';
 import { USER_ROLE } from '../User/user.constant';
+import { upload } from '../../Utils/sendImages';
 
 const router = express.Router();
 // CREATE book
 router.post(
   '/',
   auth(USER_ROLE.admin),
+  upload.single('file'),
+  (req: Request, res: Response, next: NextFunction) => {
+    req.body = JSON.parse(req.body.data);
+    next();
+  },
   validateRequest(productValidation.productSchema),
   ProductController.createProduct,
 );

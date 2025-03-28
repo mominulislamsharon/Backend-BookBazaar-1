@@ -30,9 +30,6 @@ const auth = (...requiredRole: TUserRole[]) => {
 
     const { userId, email, role } = decoded;
 
-    console.log('Required Role:', requiredRole);
-    console.log('User Role:', role);
-
     // Check if the email exists in the token
     if (!email) {
       throw new Error('Email not found in token');
@@ -40,7 +37,6 @@ const auth = (...requiredRole: TUserRole[]) => {
 
     const user = await User.findOne({ email });
     if (!user) {
-      console.log('user not', email);
       throw new Error('User not foundddd');
     }
 
