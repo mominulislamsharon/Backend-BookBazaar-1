@@ -1,3 +1,5 @@
+import QueryBuilder from '../../builder/querybuilder';
+import { productSearchableFields } from './product.constant';
 import { Category, IProduct } from './product.interface';
 import { ProductModel } from './product.model';
 
@@ -9,19 +11,21 @@ const createProductDB = async (product: IProduct<Category>) => {
 };
 
 // get all Product
-const getAllBooksDB = async (searchTerm: string | undefined) => {
-  if (searchTerm) {
-    const result = await ProductModel.find({
-      $or: [
-        { title: { $regex: searchTerm, $options: 'i' } },
-        { author: { $regex: searchTerm, $options: 'i' } },
-        { category: { $regex: searchTerm, $options: 'i' } },
-      ],
-    });
-    return result;
-  }
-  const result = await ProductModel.find();
-  return result;
+const getAllBooksDB = async (query: Record<string, unknown>) => {
+  const productsQuery = new QueryBuilder(ProductModel.find(), query)
+    .filter()
+    .search(productSearchableFields)
+    .sort()
+    .paginate()
+    .fields();
+  const result = await productsQuery.modelQuery;
+
+  const meta = await productsQuery.countTotal();
+
+  return {
+    result,
+    meta
+  };
 };
 
 const getSingleBookDB = async (id: string) => {

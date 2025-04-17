@@ -1,23 +1,36 @@
-import { Request, Response } from "express";
-import { orderService } from "./order.service";
-import catchAsync from "../../Utils/catchAsync";
-import sendResponse from "../../Utils/sendResponse";
-import { StatusCodes } from "http-status-codes";
+import { Request, Response } from 'express';
+import { orderService } from './order.service';
+import catchAsync from '../../Utils/catchAsync';
+import sendResponse from '../../Utils/sendResponse';
+import { StatusCodes } from 'http-status-codes';
 
 // create order
 const createOrder = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user;
 
-  const receivedOrder = req.body;
-  
-  const result = await orderService.createOrderDB(receivedOrder);
+  const result = await orderService.createOrderDB(req.body, user, req.ip!);
 
   sendResponse(res, {
     message: 'Order created successfully',
     status: true,
     statusCode: StatusCodes.CREATED,
     data: result,
-  })
-})
+  });
+});
+
+// verify payment
+const verifyPayment = catchAsync(async (req: Request, res: Response) => {
+  const order = await orderService.verifyPayment(req.query.order_id as string);
+
+  console.log(order);
+
+  sendResponse(res, {
+    message: 'Order verified successfully',
+    status: true,
+    statusCode: StatusCodes.OK,
+    data: order,
+  });
+});
 
 const getAllOrders = catchAsync(async (req: Request, res: Response) => {
   const result = await orderService.getAllOrders();
@@ -28,7 +41,6 @@ const getAllOrders = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
-
 
 const getSingleOrder = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -66,7 +78,6 @@ const deleteOrder = catchAsync(async (req: Request, res: Response) => {
 // create revenue
 
 const calculateRevenue = catchAsync(async (req: Request, res: Response) => {
-
   const result = await orderService.calculateRevenueDB();
 
   sendResponse(res, {
@@ -74,8 +85,8 @@ const calculateRevenue = catchAsync(async (req: Request, res: Response) => {
     status: true,
     statusCode: StatusCodes.OK,
     data: result,
-  })
-})
+  });
+});
 
 export const orderController = {
   createOrder,
@@ -83,5 +94,6 @@ export const orderController = {
   getSingleOrder,
   updateOrder,
   deleteOrder,
-  calculateRevenue
-}
+  calculateRevenue,
+  verifyPayment,
+};

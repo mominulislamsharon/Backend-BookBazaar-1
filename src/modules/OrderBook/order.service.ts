@@ -1,9 +1,15 @@
 import { ProductModel } from '../ProductBook/product.model';
+import { IUser } from '../User/user.interface';
 import { IOrder } from './order.interface';
 import OrderModel from './order.model';
+import { orderUtils } from './order.utils';
 
 // create an order
-const createOrderDB = async (receivedOrder: IOrder) => {
+const createOrderDB = async (
+  receivedOrder: IOrder,
+  user: IUser,
+  client_ip: string,
+) => {
   const productDetails = await ProductModel.findById(receivedOrder.product);
 
   if (!productDetails) throw new Error('Product not found');
@@ -19,7 +25,67 @@ const createOrderDB = async (receivedOrder: IOrder) => {
 
   receivedOrder.status = 'Pending';
 
-  return await new OrderModel(receivedOrder).save();
+  // payment process
+
+  let order = new OrderModel(receivedOrder);
+  await order.save();
+
+  const shurjopayPayload = {
+    amount: order.totalPrice,
+    order_id: order._id,
+    currency: 'BDT',
+    customer_name: user?.name || 'Unknown',
+    customer_email: user.email,
+    customer_phone: 'N/a',
+    customer_address: 'N/a',
+    customer_city: 'N/a',
+    client_ip,
+  };
+
+  const payment = await orderUtils.makePaymentAsy(shurjopayPayload);
+
+  if (payment?.transactionStatus) {
+    order = await order.updateOne({
+      transaction: {
+        id: payment.sp_order_id,
+        transactionStatus: payment.transactionStatus,
+      },
+    });
+  }
+
+  return payment.checkout_url;
+};
+
+const verifyPayment = async (order_id: string) => {
+  const verifiedPayment = await orderUtils.verifyPaymentAsy(order_id);
+
+  if (verifiedPayment.length) {
+    await OrderModel.findOneAndUpdate(
+      {
+        'transaction.id': order_id,
+      },
+      {
+        'transaction.bank_status': verifiedPayment[0].bank_status,
+        'transaction.sp_code': verifiedPayment[0].sp_code,
+        'transaction.sp_message': verifiedPayment[0].sp_message,
+        'transaction.transactionStatus': verifiedPayment[0].transaction_status,
+        'transaction.method': verifiedPayment[0].method,
+        'transaction.date_time': verifiedPayment[0].date_time,
+        status:
+          verifiedPayment[0].bank_status == 'Success'
+            ? 'Paid'
+            : verifiedPayment[0].bank_status == 'Failed'
+              ? 'Pending'
+              : verifiedPayment[0].bank_status == 'Cancel'
+                ? 'Cancelled'
+                : '',
+      },
+    );
+  }
+
+  await OrderModel.findOneAndUpdate();
+
+  return verifiedPayment;
 };
 
 const getAllOrders = async () => {
@@ -90,4 +156,5 @@ export const orderService = {
   updateOrder,
   deleteOrder,
   calculateRevenueDB,
+  verifyPayment,
 };

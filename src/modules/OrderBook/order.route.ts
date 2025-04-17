@@ -15,6 +15,8 @@ router.post(
 );
 router.get('/', auth(USER_ROLE.user), orderController.getAllOrders);
 
+router.get('/verify', auth(USER_ROLE.user), orderController.verifyPayment);
+
 router.get('/:id', auth(USER_ROLE.user), orderController.getSingleOrder);
 
 router.patch(
@@ -28,5 +30,6 @@ router.delete('/:id', auth(USER_ROLE.admin), orderController.deleteOrder);
 
 // order revenue routes
 router.get('/revenue', auth(USER_ROLE.admin), orderController.calculateRevenue);
+
 
 export const OrdersRoutes = router;

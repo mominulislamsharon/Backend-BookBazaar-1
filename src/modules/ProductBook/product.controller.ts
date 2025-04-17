@@ -34,7 +34,7 @@ const createProduct = catchAsync(
 const getAllbooks = catchAsync(async (req: Request, res: Response) => {
   const searchTerm = req.query.searchTerm as string | undefined;
 
-  const result = await ProductService.getAllBooksDB(searchTerm);
+  const result = await ProductService.getAllBooksDB(req.query);
 
   sendResponse(res, {
     message: 'Books retrieved successfully',
